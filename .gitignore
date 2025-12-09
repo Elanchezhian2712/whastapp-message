@@ -1,0 +1,75 @@
+# --------------------------
+# Python & Virtual Env
+# --------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+.env
+.venv/
+env/
+venv/
+evw/
+.whatsapp/
+
+# --------------------------
+# IDE / Editor folders
+# --------------------------
+.vscode/
+.idea/
+*.swp
+
+# --------------------------
+# OS Files
+# --------------------------
+.DS_Store
+Thumbs.db
+
+# --------------------------
+# Selenium / Chrome Profile
+# --------------------------
+data/selenium_session/
+userdata/
+chrome_profile/
+selenium-profile/
+selenium/
+selenium_data/
+
+# --------------------------
+# Logs
+# --------------------------
+logs/
+*.log
+
+# --------------------------
+# FastAPI cache / build
+# --------------------------
+*.db
+*.sqlite3
+__sessions__/
+*.pid
+
+# --------------------------
+# Python build artifacts
+# --------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --------------------------
+# Local config
+# --------------------------
+*.ini
+*.cfg
+config.json
+settings.json
+
+# --------------------------
+# Token / credentials
+# --------------------------
+*.key
+*.pem
+*.crt
+*.token
