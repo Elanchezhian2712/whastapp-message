@@ -1,1 +1,1 @@
-uvicorn app.app_server:app --reload --host 0.0.0.0 --port 8111
+uvicorn app.app_server:app --reload --host 0.0.0.0 --port 8010
