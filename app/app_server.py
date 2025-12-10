@@ -148,37 +148,15 @@ def stop():
         return {"status": "error", "detail": str(e)}
 
 
+# -----------------image generations----------
 
 from fastapi import FastAPI, Response
 from pydantic import BaseModel
-from typing import List
+from typing import List, Tuple
 from PIL import Image, ImageDraw, ImageFont
 import io
 import math
 import random
-
-
-
-from fastapi import FastAPI, Response
-from pydantic import BaseModel
-from typing import List
-from PIL import Image, ImageDraw, ImageFont
-import io
-import math
-import random
-
-
-
-def text_size(draw, text, font):
-    """Utility to compute width/height with Pillow ≥10."""
-    bbox = draw.textbbox((0, 0), text, font=font)
-    w = bbox[2] - bbox[0]
-    h = bbox[3] - bbox[1]
-    return w, h
-
-class ScoreItem(BaseModel):
-    name: str
-    score: int
 
 
 def text_size(draw, text, font):
@@ -212,7 +190,7 @@ def get_rotated_bbox(x, y, w, h, angle_deg):
     ys = [p[1] for p in rotated]
     return min(xs), min(ys), max(xs), max(ys)
 
-def check_collision(x, y, w, h, angle, placed_boxes, margin=8):
+def check_collision(x, y, w, h, angle, placed_boxes, margin=15):
     """Check if text box collides with any placed boxes."""
     x1, y1, x2, y2 = get_rotated_bbox(x, y, w, h, angle)
     
@@ -262,9 +240,9 @@ def generate_circular_leaderboard(scores):
     # Track placed text boxes
     placed_boxes = []
 
-    # --- Draw CENTER text (largest) ---
+    # --- Draw CENTER text (MUCH BIGGER) ---
     try:
-        center_font = ImageFont.truetype("arial.ttf", 85)
+        center_font = ImageFont.truetype("arial.ttf", 150)
     except:
         center_font = ImageFont.load_default()
     
@@ -273,8 +251,8 @@ def generate_circular_leaderboard(scores):
     cx, cy = center - w/2, center - h/2
     draw.text((cx, cy), text, fill="#E91E63", font=center_font)
     
-    # Add center box to placed boxes
-    placed_boxes.append((cx - 5, cy - 5, cx + w + 5, cy + h + 5))
+    # Add center box to placed boxes with larger padding
+    placed_boxes.append((cx - 15, cy - 15, cx + w + 15, cy + h + 15))
 
     # --- Prepare other items ---
     others = scores[1:]
@@ -321,9 +299,9 @@ def generate_circular_leaderboard(scores):
     max_attempts = 100
     
     # Spiral parameters
-    spiral_tightness = 8  # How quickly spiral expands
-    angle_increment = 0.5  # Radians per step
-    start_radius = 120
+    spiral_tightness = 12  # How quickly spiral expands
+    angle_increment = 0.4  # Radians per step
+    start_radius = 200  # Start further from center
     
     for data in items_data:
         placed = False
@@ -353,7 +331,7 @@ def generate_circular_leaderboard(scores):
                 rotation = -math.degrees(final_angle) + random.choice([0, 90, -90, 180])
             
             # Check if position is valid
-            if check_collision(x, y, data['w'], data['h'], rotation, placed_boxes, margin=6):
+            if check_collision(x, y, data['w'], data['h'], rotation, placed_boxes, margin=12):
                 continue
             
             # Check bounds
@@ -388,7 +366,7 @@ def generate_circular_leaderboard(scores):
                 y = center + radius * math.sin(angle)
                 rotation = random.uniform(-70, 70)
                 
-                if not check_collision(x, y, data['w'], data['h'], rotation, placed_boxes, margin=6):
+                if not check_collision(x, y, data['w'], data['h'], rotation, placed_boxes, margin=12):
                     x1, y1, x2, y2 = get_rotated_bbox(x, y, data['w'], data['h'], rotation)
                     if 20 < x1 and 20 < y1 and x2 < size - 20 and y2 < size - 20:
                         txt_img = Image.new('RGBA', (int(data['w'] + 40), int(data['h'] + 40)), (0, 0, 0, 0))
@@ -407,8 +385,8 @@ def generate_circular_leaderboard(scores):
     buf.seek(0)
     return buf
 
+
 @app.post("/leaderboard")
 def leaderboard(scores: List[ScoreItem]):
-   
     img = generate_circular_leaderboard(scores)
     return Response(content=img.getvalue(), media_type="image/png")
